@@ -10,7 +10,7 @@ Completed user stories:
 * [x] Required: Did you include support for editing todo items as described above?
 * [x] Required: Does your app persist todo items and retrieve them properly on app restart?
 * [ ] Required: Did you successfully push your code to github? Can you see the code on github?
-* [ ] Required: Did you add a README.md to the repo on github which includes a GIF walkthrough of the app's functionality?
+* [x] Required: Did you add a README.md to the repo on github which includes a GIF walkthrough of the app's functionality?
 * [x] Required: Did you create an issue on the repo and include /cc @codepathreview @codepath in the issue body?
 * [ ] Optional: Persist the todo items into SQLite instead of a text file
 * [ ] Optional: Improve style of the todo items in the list using a custom adapter
