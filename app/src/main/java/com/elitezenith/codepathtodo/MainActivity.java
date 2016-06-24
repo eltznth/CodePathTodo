@@ -9,9 +9,6 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
-import org.apache.commons.io.FileUtils;
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
@@ -23,23 +20,28 @@ public class MainActivity extends AppCompatActivity {
     EditText etEditText;
     Button btnAddItem;
     Intent intent;
+    DBHandler dbHandler;
+    String[] pos_idMap = new String[999];
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        dbHandler = new DBHandler(this,null,null,1);
         setContentView(R.layout.activity_main);
         populateArrayItems();
         lvItems = (ListView) findViewById(R.id.lvItems);
         lvItems.setAdapter(aToDoAdapter);
         etEditText = (EditText) findViewById(R.id.etEditText);
         btnAddItem = (Button) findViewById(R.id.btnAddItem);
+
         lvItems.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-                todoItems.remove(position);
-                aToDoAdapter.notifyDataSetChanged();
-                etEditText.setText("");
-                writeItems();
+                if (removeItem(position)){
+                    todoItems.remove(position);
+                    aToDoAdapter.notifyDataSetChanged();
+                    etEditText.setText("");
+                }
                 return true;
             }
         });
@@ -56,29 +58,34 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    private boolean removeItem(int position) {
+        boolean retVal = dbHandler.deleteItem(pos_idMap[position]);
+        pos_idMap = dbHandler.pos_idMap;
+        return retVal;
+    }
+
     public void populateArrayItems() {
         readItems();
         aToDoAdapter = new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1,todoItems);
     }
 
     private void readItems() {
-        File filesDir = getFilesDir();
-        File file = new File(filesDir,"todo.txt");
-        try {
-            todoItems = new ArrayList<String>(FileUtils.readLines(file));
-        } catch (IOException e) {
-
-        }
+        todoItems = new ArrayList<String>(dbHandler.readAllToList());
+        pos_idMap = dbHandler.pos_idMap;
     }
 
-    private void writeItems() {
-        File filesDir = getFilesDir();
-        File file = new File(filesDir,"todo.txt");
-        try {
-            FileUtils.writeLines(file,todoItems);
-        } catch (IOException e) {
+    private boolean addItem() {
+        String newItem = etEditText.getText().toString();
+        boolean retVal = dbHandler.addItem(newItem);
+        if (retVal)
+            pos_idMap = dbHandler.pos_idMap;
+        return retVal;
+    }
 
-        }
+    private boolean editItem(int position, String editingItem) {
+        String id = pos_idMap[position];
+        boolean retVal = dbHandler.UpdateItem(id,editingItem);
+        return retVal;
     }
 
     public void onAddItem(View view) {
@@ -86,10 +93,13 @@ public class MainActivity extends AppCompatActivity {
             etEditText.setText("");
             return;
         }
-        aToDoAdapter.add(etEditText.getText().toString());
-        aToDoAdapter.notifyDataSetChanged();
-        etEditText.setText("");
-        writeItems();
+
+        if (addItem()) {
+            aToDoAdapter.add(etEditText.getText().toString());
+            aToDoAdapter.notifyDataSetChanged();
+            etEditText.setText("");
+        }
+
     }
 
     @Override
@@ -100,10 +110,14 @@ public class MainActivity extends AppCompatActivity {
                     break;
                 String editingItem = data.getStringExtra("editingItem");
                 int position = data.getIntExtra("position",-1);
-                todoItems.set(position,editingItem);
-                aToDoAdapter.notifyDataSetChanged();
-                writeItems();
+                boolean retVal = editItem(position,editingItem);
+                if (retVal) {
+                    todoItems.set(position,editingItem);
+                    aToDoAdapter.notifyDataSetChanged();
+                }
                 break;
         }
     }
+
+
 }
