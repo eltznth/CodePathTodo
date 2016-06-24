@@ -2,7 +2,7 @@
 
 This is the prework for CodePath's Android bootcamp and also my very first Android project. I have definitely learned a lot and I think I'm addicted.
 
-Time spent: 9-10 hours spent in total
+Time spent: 11-12 hours spent in total
 
 Completed user stories:
 
